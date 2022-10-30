@@ -1,4 +1,5 @@
 import data_source
+import engine
 
 GREY = 0
 YELLOW = 1
@@ -45,7 +46,6 @@ def getInput():
         return word
 
 
-
 # print(compare("ABBCB", "BBEBX"))
 # print(compare("ABBCB", "PBEBX"))
 
@@ -57,16 +57,16 @@ solution = data_source.getRandomWord()
 print(solution)
 
 attempts = 0
+engine.initEngine()
 
 while is_running:
+    print(engine.chooseWord())
     userInput = getInput()
     value = compare(userInput, solution)
+    engine.getFeedback(value)
     attempts += 1
 
     if value == 3 ** 5 - 1:
         print("cuvant gasit")
         print(f"number of attempts {attempts}")
         is_running = False
-
-
-

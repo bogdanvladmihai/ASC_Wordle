@@ -9,6 +9,7 @@ MAX_BUCKETS = 243
 
 word_list = []
 secret_candidates = []
+last_word_chosen = ""
 
 
 def initEngine():
@@ -21,6 +22,9 @@ def initEngine():
 def compare(guess, secret):
     assert len(guess) == 5
     assert len(secret) == 5
+
+    guess = guess.upper()
+    secret = secret.upper()
 
     code = [0] * 5
     used = [False] * 5
@@ -47,14 +51,18 @@ def compare(guess, secret):
 
 
 def chooseWord():
+    print("choose word")
+    global last_word_chosen
+    if len(secret_candidates) <= 2:
+        return secret_candidates[0]
+    if len(secret_candidates) > 10000:
+        last_word_chosen = 'tarie'
+        return "tarie"
+
     max = 0
     candidate = ""
     word_with_entropy = []
-    cnt = 0
     for word in word_list:
-        cnt += 1
-        if cnt % 100 == 0:
-            print(cnt)
         entropy = computeEntropy(word)
         word_with_entropy.append([word, entropy])
         if max < entropy:
@@ -63,12 +71,13 @@ def chooseWord():
 
     word_with_entropy.sort(key=lambda tup: tup[1], reverse=True)
 
-    with open("output.txt", "w") as file:
-        for i in word_with_entropy:
-            print(i, file=file)
+    # with open("output.txt", "w") as file:
+    #     for i in word_with_entropy:
+    #         print(i, file=file)
 
     print(candidate)
     print(max)
+    last_word_chosen = candidate
     return candidate
 
 
@@ -88,11 +97,15 @@ def computeEntropy(word):
 
 
 def getFeedback(feedback):
-    pass
-
-
-data_source.readWords()
-initEngine()
-chooseWord()
+    print("getFeedback()")
+    global secret_candidates
+    global last_word_chosen
+    print(feedback)
+    new_list = []
+    for word in secret_candidates:
+        if feedback == compare(last_word_chosen, word):
+            new_list.append(word)
+    print(new_list)
+    secret_candidates = new_list
 
 # print(word_list)
