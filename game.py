@@ -56,12 +56,16 @@ is_running = True
 solution = data_source.getRandomWord()
 print(solution)
 
+attempts = 0
+
 while is_running:
     userInput = getInput()
     value = compare(userInput, solution)
+    attempts += 1
 
     if value == 3 ** 5 - 1:
         print("cuvant gasit")
+        print(f"number of attempts {attempts}")
         is_running = False
 
 
