@@ -51,9 +51,8 @@ def compare(guess, secret):
 
 
 def chooseWord():
-    print("choose word")
     global last_word_chosen
-    if len(secret_candidates) <= 2:
+    if len(secret_candidates) == 1:
         return secret_candidates[0]
     if len(secret_candidates) > 10000:
         last_word_chosen = 'tarie'
@@ -75,8 +74,6 @@ def chooseWord():
     #     for i in word_with_entropy:
     #         print(i, file=file)
 
-    print(candidate)
-    print(max)
     last_word_chosen = candidate
     return candidate
 
@@ -97,10 +94,8 @@ def computeEntropy(word):
 
 
 def getFeedback(feedback):
-    print("getFeedback()")
     global secret_candidates
     global last_word_chosen
-    print(feedback)
     new_list = []
     for word in secret_candidates:
         if feedback == compare(last_word_chosen, word):

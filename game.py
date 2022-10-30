@@ -27,8 +27,6 @@ def compare(guess, secret):
                 used[j] = True
                 break
 
-    print(code)
-
     value = 0
     for v in code:
         value = value * 3 + v
@@ -49,24 +47,55 @@ def getInput():
 # print(compare("ABBCB", "BBEBX"))
 # print(compare("ABBCB", "PBEBX"))
 
+
+
+# data_source.readWords()
+#
+# is_running = True
+#
+# solution = data_source.getRandomWord()
+# print(solution)
+#
+# attempts = 0
+# engine.initEngine()
+#
+# while is_running:
+#     print(engine.chooseWord())
+#     userInput = getInput()
+#     value = compare(userInput, solution)
+#     engine.getFeedback(value)
+#     attempts += 1
+#
+#     if value == 3 ** 5 - 1:
+#         print("cuvant gasit")
+#         print(f"number of attempts {attempts}")
+#         is_running = False
+
 data_source.readWords()
+average = 0
+for word in data_source.getList():
+    is_running = True
+    solution = word
+    print(solution)
+    engine.initEngine()
 
-is_running = True
+    attempts = 0
+    while is_running:
+        userInput = engine.chooseWord()
+        userInput = userInput.upper()
+        print(userInput)
+        value = compare(userInput, solution)
+        engine.getFeedback(value)
+        attempts += 1
 
-solution = data_source.getRandomWord()
-print(solution)
+        if value == 3 ** 5 - 1:
+            print("cuvant gasit")
+            print(f"number of attempts {attempts}")
+            is_running = False
 
-attempts = 0
-engine.initEngine()
+    print(f"{word} - {attempts}")
+    average += attempts
 
-while is_running:
-    print(engine.chooseWord())
-    userInput = getInput()
-    value = compare(userInput, solution)
-    engine.getFeedback(value)
-    attempts += 1
 
-    if value == 3 ** 5 - 1:
-        print("cuvant gasit")
-        print(f"number of attempts {attempts}")
-        is_running = False
+average /= len(data_source.getList())
+print(f"average: {average}")
