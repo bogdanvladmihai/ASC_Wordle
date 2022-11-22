@@ -3,19 +3,27 @@ from math import log2
 from dataSource import DataSource
 from game import compareWords
 
+FIRST = "TAREI"
 
 class Engine:
     dataSource = DataSource()
 
     def __init__(self):
+        self.guesses = 0
+        self.lastHash = -1
         self.possibleWords = Engine.dataSource.words
+        self.secondChoice = Engine.dataSource.second
 
     def chooseWord(self):
-
-        if len(self.possibleWords) > 10000:
-            return "TAREI"
-        if len(self.possibleWords) <= 1:
+        if self.guesses == 0:
+            return FIRST
+        elif self.guesses == 1:
+            return self.secondChoice[self.lastHash]
+        elif len(self.possibleWords) == 1:
             return self.possibleWords[0]
+        elif len(self.possibleWords) == 0:
+            return None
+    
 
         # file = open("output.txt", "w")
 
@@ -53,6 +61,9 @@ class Engine:
         return entropy
 
     def updateWords(self, word, value):
+        self.guesses += 1
+        self.lastHash = value
+
         new_list = []
         for secretWord in self.possibleWords:
             if compareWords(secretWord, word) == value:

@@ -18,6 +18,9 @@ def getGuess():
 
 # to modify
 def compareWords(word, guess):
+    if guess == "X":
+        print("??")
+        assert(False)
     assert len(word) == 5
     assert len(guess) == 5
 

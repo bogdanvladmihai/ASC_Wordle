@@ -23,7 +23,7 @@ def checkAllWords():
         game = Game(word)
         engine = Engine()
 
-        guesses = []
+        guesses = [word]
 
         tries = 0
         while True:
@@ -39,15 +39,41 @@ def checkAllWords():
 
         avg += tries
         if index % 100 == 0:
+            print(word)
             print(f"{index} - {(time.time() - start_time)} - avg: {avg / index}")
 
-        print(f"{word} -> {guesses}", file=file)
+
+        for i in range(len(guesses)):
+            if i > 0:
+                print(", ", end = "", file = file)
+            print(guesses[i], end = "", file = file)
+        print(file = file)
 
     print(avg / len(DataSource.words))
 
 
+def calculateSecondChoice():
+    file = open("second.txt", "w")
+
+    for fixedHash in range(3 ** 5):
+        engine = Engine()
+
+        firstGuess = engine.chooseWord()
+        engine.updateWords(firstGuess, fixedHash)
+
+        secondGuess = engine.chooseWord()
+        if secondGuess == None:
+            secondGuess = "NOTAWORD"
+        
+        print(secondGuess, file = file)
+
+    # engine = Engine()
+    # print(engine.secondChoice)
+    # assert(len(engine.secondChoice) == 3 ** 5)
+    # assert("X" not in engine.secondChoice)
+
+
 start_time = time.time()
 checkAllWords()
-
 
 print("--- %s seconds ---" % (time.time() - start_time))
