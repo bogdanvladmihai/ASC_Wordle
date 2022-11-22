@@ -1,106 +1,60 @@
-import math
+from math import log2
 
-import data_source
-
-GREY = 0
-YELLOW = 1
-GREEN = 2
-MAX_BUCKETS = 243
-
-word_list = []
-secret_candidates = []
-last_word_chosen = ""
+from dataSource import DataSource
+from game import compareWords
 
 
-def initEngine():
-    global word_list
-    word_list = data_source.getList()
-    global secret_candidates
-    secret_candidates = word_list
+class Engine:
+    dataSource = DataSource()
 
+    def __init__(self):
+        self.possibleWords = Engine.dataSource.words
 
-def compare(guess, secret):
-    assert len(guess) == 5
-    assert len(secret) == 5
+    def chooseWord(self):
 
-    guess = guess.upper()
-    secret = secret.upper()
+        if len(self.possibleWords) > 10000:
+            return "TAREI"
+        if len(self.possibleWords) <= 1:
+            return self.possibleWords[0]
 
-    code = [0] * 5
-    used = [False] * 5
+        # file = open("output.txt", "w")
 
-    for i in range(5):
-        if guess[i] == secret[i]:
-            code[i] = GREEN
-            used[i] = True
+        # entropies = []
+        # index = 0
+        best_word = "aaaaa"
+        max = 0
+        for word in self.possibleWords:
+            entropy = self.computeEntropy(word)
+            if max < entropy:
+                max = entropy
+                best_word = word
 
-    for i in range(5):
-        if code[i] == GREEN:
-            continue
-        for j in range(5):
-            if guess[i] == secret[j] and not used[j]:
-                code[i] = YELLOW
-                used[j] = True
-                break
+        return best_word
 
-    value = 0
-    for v in code:
-        value = value * 3 + v
+        # entropies.sort(key=lambda x: x[1], reverse=True)
 
-    return value
+        # for pair in entropies:
+        #     print(pair, file=file)
+        #
+        # print(entropies)
 
+    def computeEntropy(self, word):
+        buckets = [0] * 243
+        for secretWord in self.possibleWords:
+            buckets[compareWords(secretWord, word)] += 1
 
-def chooseWord():
-    global last_word_chosen
-    if len(secret_candidates) == 1:
-        return secret_candidates[0]
-    if len(secret_candidates) > 10000:
-        last_word_chosen = 'tarie'
-        return "tarie"
+        entropy = 0
+        for count in buckets:
+            if count == 0:
+                continue
+            p = count / len(self.possibleWords)
+            entropy = entropy + p * (-log2(p))
 
-    max = 0
-    candidate = ""
-    word_with_entropy = []
-    for word in word_list:
-        entropy = computeEntropy(word)
-        word_with_entropy.append([word, entropy])
-        if max < entropy:
-            max = entropy
-            candidate = word
+        return entropy
 
-    word_with_entropy.sort(key=lambda tup: tup[1], reverse=True)
-
-    # with open("output.txt", "w") as file:
-    #     for i in word_with_entropy:
-    #         print(i, file=file)
-
-    last_word_chosen = candidate
-    return candidate
-
-
-def computeEntropy(word):
-    count = [0] * MAX_BUCKETS
-    for solution in secret_candidates:
-        count[compare(word, solution)] += 1
-
-    entropy = 0
-    for bucket_size in count:
-        if bucket_size == 0:
-            continue
-        p = bucket_size / len(secret_candidates)
-        entropy += p * math.log2(1 / p)
-
-    return entropy
-
-
-def getFeedback(feedback):
-    global secret_candidates
-    global last_word_chosen
-    new_list = []
-    for word in secret_candidates:
-        if feedback == compare(last_word_chosen, word):
-            new_list.append(word)
-    print(new_list)
-    secret_candidates = new_list
-
-# print(word_list)
+    def updateWords(self, word, value):
+        new_list = []
+        for secretWord in self.possibleWords:
+            if compareWords(secretWord, word) == value:
+                new_list.append(secretWord)
+        self.possibleWords = new_list

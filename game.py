@@ -1,101 +1,79 @@
-import data_source
-import engine
-
-GREY = 0
-YELLOW = 1
-GREEN = 2
+from dataSource import DataSource
 
 
-def compare(guess, secret):
+def wordIsValid(word):
+    if len(word) != 5:
+        return False
+    if word not in DataSource.words:
+        return False
+    return True
+
+
+def getGuess():
+    guess_word = input("Your guess: ").upper()
+    while not wordIsValid(guess_word):
+        guess_word = input("Your guess is invalid. Please choose another one: ").upper()
+    return guess_word
+
+
+# to modify
+def compareWords(word, guess):
+    assert len(word) == 5
     assert len(guess) == 5
-    assert len(secret) == 5
 
     code = [0] * 5
-    used = [False] * 5
+    chrset = set()
+    for i in range(5):
+        if word[i] == guess[i]:
+            code[i] = 2
+        chrset.add(word[i])
 
     for i in range(5):
-        if guess[i] == secret[i]:
-            code[i] = GREEN
-            used[i] = True
-
-    for i in range(5):
-        if code[i] == GREEN:
+        if code[i] == 2:
             continue
-        for j in range(5):
-            if guess[i] == secret[j] and not used[j]:
-                code[i] = YELLOW
-                used[j] = True
-                break
+        if guess[i] in chrset:
+            code[i] = 1
 
     value = 0
-    for v in code:
-        value = value * 3 + v
+    for i in code:
+        value = value * 3 + i
 
     return value
 
 
-def getInput():
-    while True:
-        word = input("word: ")
-        word = word.upper()
-        if not data_source.isValid(word):
-            print("Please enter valid input")
-            continue
-        return word
+def toBase3(value):
+    ans = ""
+    for i in range(5):
+        ans = str(value % 3) + ans
+        value //= 3
+    return ans
 
 
-# print(compare("ABBCB", "BBEBX"))
-# print(compare("ABBCB", "PBEBX"))
+class Game:
+    dataSource = DataSource()
 
+    def __init__(self, word=None):
+        self.secretWord = word
+        if self.secretWord is None:
+            self.chooseRandomWord()
+        #print(self.secretWord)
+        #print("A random word has been chosen!")
 
+    def chooseRandomWord(self):
+        self.secretWord = self.dataSource.getRandomWord()
 
-# data_source.readWords()
-#
-# is_running = True
-#
-# solution = data_source.getRandomWord()
-# print(solution)
-#
-# attempts = 0
-# engine.initEngine()
-#
-# while is_running:
-#     print(engine.chooseWord())
-#     userInput = getInput()
-#     value = compare(userInput, solution)
-#     engine.getFeedback(value)
-#     attempts += 1
-#
-#     if value == 3 ** 5 - 1:
-#         print("cuvant gasit")
-#         print(f"number of attempts {attempts}")
-#         is_running = False
+    def play(self):
+        tries = 0
+        game_finished = False
+        while not game_finished:
+            guess = getGuess()
+            tries += 1
 
-data_source.readWords()
-average = 0
-for word in data_source.getList():
-    is_running = True
-    solution = word
-    print(solution)
-    engine.initEngine()
+            if guess == self.secretWord:
+                game_finished = True
+                print(f"You have guessed the word in {tries} tries")
+                continue
 
-    attempts = 0
-    while is_running:
-        userInput = engine.chooseWord()
-        userInput = userInput.upper()
-        print(userInput)
-        value = compare(userInput, solution)
-        engine.getFeedback(value)
-        attempts += 1
+            value = compareWords(self.secretWord, guess)
 
-        if value == 3 ** 5 - 1:
-            print("cuvant gasit")
-            print(f"number of attempts {attempts}")
-            is_running = False
-
-    print(f"{word} - {attempts}")
-    average += attempts
-
-
-average /= len(data_source.getList())
-print(f"average: {average}")
+            print(toBase3(value))
