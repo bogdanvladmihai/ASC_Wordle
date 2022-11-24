@@ -4,7 +4,7 @@ from dataSource import DataSource
 from game import compareWords
 
 FIRST = "TAREI"
-LAYERONELIMIT = 5
+LAYERONELIMIT = 500000
 
 class Engine:
     dataSource = DataSource()
@@ -16,79 +16,69 @@ class Engine:
         self.possibleWords = Engine.dataSource.words
         self.secondChoice = Engine.dataSource.second
 
-    def findPossibleWord(self, word, feedbackCode):
-        l = []
-        for secret in self.possibleWords:
-            if compareWords(secret, word) == feedbackCode:
-                l.append(secret)
-        return l
+    def simulate(self, word):
+        entropy = 0
+        bucket = []
+        for i in range(3 ** 5):
+            bucket.append([])
+        for secretWord in self.words:
+            bucket[compareWords(secretWord, word)].append(secretWord)
 
-    # def simulate(self, word):
-    #     for feedbackCode in range(3 ** 5):
-    #         # find the list of possible word after you guess word and got the feedback feedbackCode
-    #         pos = self.findPossibleWord(word, feedbackCode)
-    #         # Evaluate entropy of each word in pos
-    #         # Take max(entropy(pos))
+        for feedbackCode in range(3 ** 5):
+            if len(bucket[feedbackCode]) == 0:
+                continue
+            # 
 
-    #     # Compte the entropy using this info (best word entro and bucket size)
-    #     return None
+        return entropy
 
     def chooseWord(self):
         if self.guesses == 0:
             return FIRST
         elif self.guesses == 1:
             return self.secondChoice[self.lastHash]
-        elif len(self.possibleWords) == 1:
+        if len(self.possibleWords) == 1:
             return self.possibleWords[0]
         elif len(self.possibleWords) == 0:
             return None
     
+        if len(self.possibleWords) <= LAYERONELIMIT:
+            l = self.possibleWords
+            if len(self.possibleWords) >= 3:
+                l = self.words
 
-        # file = open("output.txt", "w")
+            best_word = None
+            max = 0
+            for word in l:
+                entropy = self.computeEntropy(word)
+                if max < entropy:
+                    max = entropy
+                    best_word = word
 
-        # entropies = []
-        # index = 0
-        # if len(self.possibleWords) <= LAYERONELIMIT:
-        best_word = "aaaaa"
-        max = 0
-        l = self.possibleWords
-        if len(self.possibleWords) >= 9:
-            l = self.words
-        for word in l:
-            entropy = self.computeEntropy(word)
-            if max < entropy:
-                max = entropy
-                best_word = word
+            return best_word
+        else:
+            entropies = []
+            for word in self.words:
+                entropies.append([self.computeEntropy(word), word])
 
-        return best_word
-        
-        # entropies = []
-        # i = 0
-        # for word in self.words:
-        #     print(i)
-        #     i += 1
-        #     entropies.append([self.computeEntropy(word), word])
-        # print("Calculated entropies!")
+            entropies.sort()
+            numberOfCandidates = 0
+            if len(self.possibleWords) > 1000:
+                numberOfCandidates = 100
+            elif len(self.possibleWords) >= 50:
+                numberOfCandidates = 10
+            else:
+                numberOfCandidates = 5       
+            candidates = entropies[-numberOfCandidates:]
 
-        # entropies.sort()
-        # numberOfCandidates = 0
-        # if len(possibleWords) > 1000:
-        #     numberOfCandidates = 100
-        # elif len(possibleWords) >= 50:
-        #     numberOfCandidates = 15
-        # else:
-        #     numberOfCandidates = 5       
-        # candidates = entropies[-numberOfCandidates:]
-
-        # best = 0
-        # answer = "vladu"
-        # for candidate in candidates:
-        #     simulationResult = self.simulate(candidate)
-        #     if simulationResult > best:
-        #         best = simulationResult
-        #         answer = candidate
-
-        # return answer
+            best = 0
+            answer = None
+            for candidate in candidates:
+                simulationResult = self.simulate(candidate[1])
+                if simulationResult > best:
+                    best = simulationResult
+                    answer = candidate
+            
+            return answer
 
     def computeEntropy(self, word):
         buckets = [0] * 243

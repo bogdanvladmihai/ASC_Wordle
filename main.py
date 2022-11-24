@@ -51,6 +51,7 @@ def checkAllWords():
         print(file = file)
 
     print(avg / len(DataSource.words))
+    print(avg / len(DataSource.words), file = file)
 
 
 def calculateSecondChoice():
@@ -75,7 +76,13 @@ def calculateSecondChoice():
     # assert("X" not in engine.secondChoice)
 
 
+def getBestWord():
+    engine = Engine()
+    word = engine.chooseWord()
+    print(word)
+
 start_time = time.time()
+
 checkAllWords()
 
 print("--- %s seconds ---" % (time.time() - start_time))
