@@ -24,7 +24,7 @@ def checkAllWords():
         engine = Engine()
 
         guesses = [word]
-
+        print(f"+{index}")
         tries = 0
         while True:
             guess = engine.chooseWord()
@@ -38,6 +38,7 @@ def checkAllWords():
             engine.updateWords(guess, value)
 
         avg += tries
+        print(f"-{index}")
         if index % 100 == 0:
             print(word)
             print(f"{index} - {(time.time() - start_time)} - avg: {avg / index}")
@@ -56,6 +57,7 @@ def calculateSecondChoice():
     file = open("second.txt", "w")
 
     for fixedHash in range(3 ** 5):
+        print(fixedHash)
         engine = Engine()
 
         firstGuess = engine.chooseWord()

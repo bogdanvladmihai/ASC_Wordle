@@ -4,6 +4,7 @@ from dataSource import DataSource
 from game import compareWords
 
 FIRST = "TAREI"
+LAYERONELIMIT = 5
 
 class Engine:
     dataSource = DataSource()
@@ -11,8 +12,26 @@ class Engine:
     def __init__(self):
         self.guesses = 0
         self.lastHash = -1
+        self.words = Engine.dataSource.words
         self.possibleWords = Engine.dataSource.words
         self.secondChoice = Engine.dataSource.second
+
+    def findPossibleWord(self, word, feedbackCode):
+        l = []
+        for secret in self.possibleWords:
+            if compareWords(secret, word) == feedbackCode:
+                l.append(secret)
+        return l
+
+    # def simulate(self, word):
+    #     for feedbackCode in range(3 ** 5):
+    #         # find the list of possible word after you guess word and got the feedback feedbackCode
+    #         pos = self.findPossibleWord(word, feedbackCode)
+    #         # Evaluate entropy of each word in pos
+    #         # Take max(entropy(pos))
+
+    #     # Compte the entropy using this info (best word entro and bucket size)
+    #     return None
 
     def chooseWord(self):
         if self.guesses == 0:
@@ -29,22 +48,47 @@ class Engine:
 
         # entropies = []
         # index = 0
+        # if len(self.possibleWords) <= LAYERONELIMIT:
         best_word = "aaaaa"
         max = 0
-        for word in self.possibleWords:
+        l = self.possibleWords
+        if len(self.possibleWords) >= 9:
+            l = self.words
+        for word in l:
             entropy = self.computeEntropy(word)
             if max < entropy:
                 max = entropy
                 best_word = word
 
         return best_word
+        
+        # entropies = []
+        # i = 0
+        # for word in self.words:
+        #     print(i)
+        #     i += 1
+        #     entropies.append([self.computeEntropy(word), word])
+        # print("Calculated entropies!")
 
-        # entropies.sort(key=lambda x: x[1], reverse=True)
+        # entropies.sort()
+        # numberOfCandidates = 0
+        # if len(possibleWords) > 1000:
+        #     numberOfCandidates = 100
+        # elif len(possibleWords) >= 50:
+        #     numberOfCandidates = 15
+        # else:
+        #     numberOfCandidates = 5       
+        # candidates = entropies[-numberOfCandidates:]
 
-        # for pair in entropies:
-        #     print(pair, file=file)
-        #
-        # print(entropies)
+        # best = 0
+        # answer = "vladu"
+        # for candidate in candidates:
+        #     simulationResult = self.simulate(candidate)
+        #     if simulationResult > best:
+        #         best = simulationResult
+        #         answer = candidate
+
+        # return answer
 
     def computeEntropy(self, word):
         buckets = [0] * 243
