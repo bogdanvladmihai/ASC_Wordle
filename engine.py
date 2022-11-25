@@ -10,11 +10,11 @@ class Engine:
     dataSource = DataSource()
 
     def __init__(self):
-        self.guesses = 0
-        self.lastHash = -1
+        self.guesses = []
         self.words = Engine.dataSource.words
         self.possibleWords = Engine.dataSource.words
         self.secondChoice = Engine.dataSource.second
+        self.third = Engine.dataSource.third
 
     def computeSimulationEntropy(self, word, secretWords):
         bucket = [0] * 3 ** 5
@@ -25,7 +25,7 @@ class Engine:
         for count in bucket:
             if count == 0:
                 continue
-            p = count / len(self.possibleWords)
+            p = count / len(secretWords)
             entropy = entropy + p * (-log2(p))
 
         return entropy
@@ -37,40 +37,28 @@ class Engine:
         for secretWord in self.possibleWords:
             bucket[compareWords(secretWord, guess)].append(secretWord)
 
-        count = 0
-        for feedbackCode in range(3 ** 5):
-            if len(bucket[feedbackCode]) > 0:
-                count += 1
-
         med = 0
         for feedbackCode in range(3 ** 5):
-            # print(f"Bucket id = {feedbackCode}.")
             if len(bucket[feedbackCode]) == 0:
                 continue
-            # Guessed the word guess and got the feedback code = feedbackCode
-            # Now, I only have the words left in bucket[feedbackCode]
-            # I might generate
-            
+
             bestInfo = 0
             for word in self.words:
                 bestInfo = max(bestInfo, self.computeSimulationEntropy(word, bucket[feedbackCode]))
             
-            # Now I know the maximum information I can get if I chose the word guess, got the feedback code =
-            # feedbackCode and gave one more guess
-            prob = len(bucket[feedbackCode]) / count
-            # I have to add the guess with the best information (bestInfo), knowing I can get it with probability
-            # equal to prob
-            # Event with profit bestInfo happends with probaility prob
+            prob = len(bucket[feedbackCode]) / len(self.possibleWords)
             med += prob * bestInfo
 
         return med
 
     def chooseWord(self):
-        if self.guesses == 0:
+        if len(self.guesses) == 0:
             return FIRST
-        elif self.guesses == 1:
-            return self.secondChoice[self.lastHash]
-        if len(self.possibleWords) == 1:
+        elif len(self.guesses) == 1:
+            return self.secondChoice[self.guesses[0]]
+        elif len(self.guesses) == 2:
+            return self.third[self.guesses[0] * 243 + self.guesses[1]]
+        elif len(self.possibleWords) == 1:
             return self.possibleWords[0]
         elif len(self.possibleWords) == 0:
             return None
@@ -135,23 +123,17 @@ class Engine:
         for secretWord in self.possibleWords:
             buckets[compareWords(secretWord, word)] += 1
 
-        counter = 0
-        for count in buckets:
-            if count > 0:
-                counter += 1
-            
         entropy = 0
         for count in buckets:
             if count == 0:
                 continue
-            p = count / counter
+            p = count / len(self.possibleWords)
             entropy = entropy + p * (-log2(p))
 
         return entropy
 
     def updateWords(self, word, value):
-        self.guesses += 1
-        self.lastHash = value
+        self.guesses.append(value)
 
         newList = []
         for secretWord in self.possibleWords:

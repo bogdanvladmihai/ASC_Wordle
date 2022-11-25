@@ -64,6 +64,28 @@ def calculateSecondChoice():
         
         print(secondGuess, file = file)
 
+def calculateThirdStep():
+    file = open("third.txt", "w")
+
+    for first in range(3 ** 5):
+        for second in range(3 ** 5):
+            engine = Engine()
+
+            firstGuess = engine.chooseWord()
+            engine.updateWords(firstGuess, first)
+
+            secondGuess = engine.chooseWord()
+            thirdGuess = None
+            if secondGuess != None:
+                engine.updateWords(secondGuess, second)
+                thirdGuess = engine.chooseWord()
+            
+            if thirdGuess == None:
+                thirdGuess = "NOTAWORD"
+            print(thirdGuess, file = file)
+
+            print(f"{first}.{second}")
+            
 
 def getBestWord():
     engine = Engine()
@@ -71,8 +93,6 @@ def getBestWord():
 
 start_time = time.time()
 
-engine = Engine()
-print(engine.secondChoice)
 checkAllWords()
 
 print("--- %s seconds ---" % (time.time() - start_time))
