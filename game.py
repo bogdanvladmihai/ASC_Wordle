@@ -16,11 +16,7 @@ def getGuess():
     return guess_word
 
 
-# to modify
 def compareWords(word, guess):
-    if guess == "X":
-        print("??")
-        assert(False)
     assert len(word) == 5
     assert len(guess) == 5
 
@@ -59,8 +55,6 @@ class Game:
         self.secretWord = word
         if self.secretWord is None:
             self.chooseRandomWord()
-        #print(self.secretWord)
-        #print("A random word has been chosen!")
 
     def chooseRandomWord(self):
         self.secretWord = self.dataSource.getRandomWord()

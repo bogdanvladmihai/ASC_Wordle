@@ -12,24 +12,19 @@ def startGame():
     # game.play()
 
 
-
 def checkAllWords():
-    avg = 0
-
     file = open("solutions.txt", "w")
     index = 0
+    avg = 0
     for word in DataSource.words:
         index += 1
         game = Game(word)
         engine = Engine()
 
         guesses = [word]
-        print(f"+{index}")
-        tries = 0
         while True:
             guess = engine.chooseWord()
             guesses.append(guess)
-            tries += 1
 
             if guess == game.secretWord:
                 break
@@ -37,8 +32,7 @@ def checkAllWords():
             value = compareWords(game.secretWord, guess)
             engine.updateWords(guess, value)
 
-        avg += tries
-        print(f"-{index}")
+        avg += len(guesses) - 1
         if index % 100 == 0:
             print(word)
             print(f"{index} - {(time.time() - start_time)} - avg: {avg / index}")
@@ -70,19 +64,15 @@ def calculateSecondChoice():
         
         print(secondGuess, file = file)
 
-    # engine = Engine()
-    # print(engine.secondChoice)
-    # assert(len(engine.secondChoice) == 3 ** 5)
-    # assert("X" not in engine.secondChoice)
-
 
 def getBestWord():
     engine = Engine()
-    word = engine.chooseWord()
-    print(word)
+    return engine.chooseWord()
 
 start_time = time.time()
 
+engine = Engine()
+print(engine.secondChoice)
 checkAllWords()
 
 print("--- %s seconds ---" % (time.time() - start_time))
