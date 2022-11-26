@@ -3,10 +3,18 @@ from math import log2
 from dataSource import DataSource
 from game import compareWords
 
+INF = 10**6
 FIRST = "TAREI"
-LAYERONELIMIT = 500000
 
 class Engine:
+    class WordInfo:
+        def __init__(self):
+            self.entropy = 0
+            self.maxCardinal = 0
+            self.minCardinal = INF
+            self.points = 0
+            self.entropy = 0
+
     dataSource = DataSource()
 
     def __init__(self):
@@ -16,41 +24,6 @@ class Engine:
         self.secondChoice = Engine.dataSource.second
         self.third = Engine.dataSource.third
 
-    def computeSimulationEntropy(self, word, secretWords):
-        bucket = [0] * 3 ** 5
-        for secretWord in secretWords:
-            bucket[compareWords(secretWord, word)] += 1
-
-        entropy = 0
-        for count in bucket:
-            if count == 0:
-                continue
-            p = count / len(secretWords)
-            entropy = entropy + p * (-log2(p))
-
-        return entropy
-
-    def simulate(self, guess):
-        bucket = []
-        for i in range(3 ** 5):
-            bucket.append([])
-        for secretWord in self.possibleWords:
-            bucket[compareWords(secretWord, guess)].append(secretWord)
-
-        med = 0
-        for feedbackCode in range(3 ** 5):
-            if len(bucket[feedbackCode]) == 0:
-                continue
-
-            bestInfo = 0
-            for word in self.words:
-                bestInfo = max(bestInfo, self.computeSimulationEntropy(word, bucket[feedbackCode]))
-            
-            prob = len(bucket[feedbackCode]) / len(self.possibleWords)
-            med += prob * bestInfo
-
-        return med
-
     def chooseWord(self):
         if len(self.guesses) == 0:
             return FIRST
@@ -58,79 +31,56 @@ class Engine:
             return self.secondChoice[self.guesses[0]]
         elif len(self.guesses) == 2:
             return self.third[self.guesses[0] * 243 + self.guesses[1]]
-        elif len(self.possibleWords) == 1:
+        if len(self.possibleWords) <= 2:
             return self.possibleWords[0]
         elif len(self.possibleWords) == 0:
             return None
-    
-        if len(self.possibleWords) <= LAYERONELIMIT:
-            l = self.possibleWords
-            if len(self.possibleWords) >= 3:
-                l = self.words
 
-            bestWord = None
-            max = 0
-            for word in l:
-                entropy = self.computeEntropy(word)
-                if max < entropy:
-                    max = entropy
-                    bestWord = word
+        bestWord = None
+        max = None
+        for i in range(len(self.words)):
+            word = self.words[i]
 
-            return bestWord
-        else:
-            entropies = []
-            for word in self.words:
-                entropy = self.computeEntropy(word)
-                entropies.append([entropy, word])
+            result = self.computeValue(word)
+            if max == None:
+                max = result
+                bestWord = word
+            elif max.maxCardinal > result.maxCardinal:
+                max = result
+                bestWord = word
+            elif max.maxCardinal == result.maxCardinal and max.points < result.points:
+                max = result
+                bestWord = word
+            elif max.maxCardinal == result.maxCardinal and max.points == result.points and max.minCardinal > result.minCardinal:
+                max = result
+                bestWord = word
 
-            entropies.sort(reverse = True)
-            numberOfCandidates = 0
-            if len(self.possibleWords) > 1000:
-                numberOfCandidates = 100
-            elif len(self.possibleWords) >= 50:
-                numberOfCandidates = 10
-            else:
-                numberOfCandidates = 5       
+        return bestWord
 
-            candidates = entropies[:numberOfCandidates]
-            for x in candidates:
-                print(x)
+    def computeValue(self, word):
+        wordInfo = self.WordInfo()
 
-            best = 0
-            answer = None
-            answers = []
-            # id = 0
-            for candidate in candidates:
-                # print(f"Candidate id = {id}")
-                # id += 1
-                simulationResult = self.simulate(candidate[1])
-                if simulationResult > best:
-                    best = simulationResult
-                    answer = candidate
-
-                print(candidate[1], simulationResult)
-                # answers.append([simulationResult, candidate[1]])
-
-            answers.sort()
-            outputFile = open("twosteps.txt", "w")
-            for pair in answers:
-                print(pair, file = outputFile)
-            
-            return answer
-
-    def computeEntropy(self, word):
         buckets = [0] * 243
         for secretWord in self.possibleWords:
             buckets[compareWords(secretWord, word)] += 1
 
-        entropy = 0
-        for count in buckets:
+        wordInfo.entropy = 0
+        for feedbackCode in range(3 ** 5):
+            count = buckets[feedbackCode]
             if count == 0:
                 continue
-            p = count / len(self.possibleWords)
-            entropy = entropy + p * (-log2(p))
 
-        return entropy
+            wordInfo.minCardinal = min(wordInfo.minCardinal, count)
+            wordInfo.points += count * self.getScore(feedbackCode)
+            wordInfo.maxCardinal = max(wordInfo.maxCardinal, count)
+
+            p = count / len(self.possibleWords)
+            wordInfo.entropy = wordInfo.entropy + p * (-log2(p))
+
+        if wordInfo.maxCardinal == 0:
+            wordInfo.maxCardinal = INF
+
+        return wordInfo
 
     def updateWords(self, word, value):
         self.guesses.append(value)
@@ -140,3 +90,11 @@ class Engine:
             if compareWords(secretWord, word) == value:
                 newList.append(secretWord)
         self.possibleWords = newList
+
+    def getScore(self, value):
+        answer = 0
+        while value > 0:
+            answer += value % 3
+            value //= 3
+        
+        return answer

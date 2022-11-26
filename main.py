@@ -34,7 +34,6 @@ def checkAllWords():
 
         avg += len(guesses) - 1
         if index % 100 == 0:
-            print(word)
             print(f"{index} - {(time.time() - start_time)} - avg: {avg / index}")
 
 
