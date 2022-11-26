@@ -1,4 +1,5 @@
 from dataSource import DataSource
+import functools
 
 
 def wordIsValid(word):
@@ -14,7 +15,6 @@ def getGuess():
     while not wordIsValid(guess_word):
         guess_word = input("Your guess is invalid. Please choose another one: ").upper()
     return guess_word
-
 
 def compareWords(word, guess):
     assert len(word) == 5

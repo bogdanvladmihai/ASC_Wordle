@@ -4,8 +4,7 @@ import string
 from dataSource import DataSource
 from game import compareWords
 
-INF = 10**6
-FIRST = "TAREI"
+FIRST = "TUREI"
 PRI = 97
 
 class Engine:
@@ -23,7 +22,50 @@ class Engine:
         for word in self.words:
             self.possible.add(hash(word))
 
+    def computeSimulationEntropy(self, word, secretWords):
+        buckets = [0] * 243
+        for secretWord in secretWords:
+            buckets[compareWords(secretWord, word)] += 1
+
+        entropy = 0
+        for count in buckets:
+            if count == 0:
+                continue
+                
+            prob = count / len(secretWords)
+            entropy = entropy + prob * (-log2(prob))
+
+        return entropy
+        
+
+    def simulate(self, word):
+        possible = []
+        for i in range(3 ** 5):
+            possible.append([])
+
+        for secretWord in self.possibleWords:
+            possible[compareWords(secretWord, word)].append(secretWord)
+
+        entropy = 0
+        for firstResult in range(3 ** 5):
+            if len(possible[firstResult]) == 0:
+                continue
+
+            max = 0
+            for guess in self.words:
+                guessEntropy = self.computeSimulationEntropy(guess, possible[firstResult])
+                if guessEntropy > max:
+                    max = guessEntropy
+            
+            prob = len(possible[firstResult]) / len(self.possibleWords)
+            entropy = entropy + prob * max
+
+        return entropy
+
+
     def getBestWord(self):
+        if len(self.possibleWords) == 0:
+            return None
         if len(self.possibleWords) == 1:
             return self.possibleWords[0]
 
@@ -52,6 +94,9 @@ class Engine:
             return True
         return False
 
+    def compare(self, t):
+        return -t[0], -int(t[2] * 1000), t[1], -t[2]
+
     def chooseWord(self):
         if len(self.guesses) == 0:
             return FIRST
@@ -61,30 +106,48 @@ class Engine:
             return self.third[self.guesses[0] * 243 + self.guesses[1]]
         if len(self.possibleWords) <= 2:
             return self.getBestWord()
-        elif len(self.possibleWords) == 0:
-            return None
 
-        bestWord = None
-        max = None
+        entropies = []
         for word in self.words:
-            result = self.computeValue(word)
-            if max == None:
-                max = result
-                bestWord = word
-            elif max < result or (max == result and not self.isPossible(bestWord) and self.isPossible(word)):
-                max = result
-                bestWord = word
+            result = self.computeEntropy(word)
+            entropies.append([result, word, self.isPossible(word)])
+
+        numberOfCandidates = min(5, len(self.possibleWords))
+        if len(self.possibleWords) >= 1000:
+            numberOfCandidates = 45
+        elif len(self.possibleWords) >= 100:
+            numberOfCandidates = 12
+
+        entropies.sort(key = self.compare)
+        candidates = entropies[:numberOfCandidates]
+
+        return candidates[0][1]
+
+        for candidate in candidates:
+            print(candidate)
+
+        bestResult = 0
+        bestWord = None
+        id = 0
+        for word in candidates:
+            print(id)
+            id += 1
+            simulationResult = self.simulate(word[1]) + word[0]
+            if simulationResult > bestResult:
+                bestResult = simulationResult
+                bestWord = word[1]
+
+        print(bestResult, bestWord)
 
         return bestWord
 
-    def computeValue(self, word):
+    def computeEntropy(self, word):
         buckets = [0] * 243
         for secretWord in self.possibleWords:
             buckets[compareWords(secretWord, word)] += 1
 
         entropy = 0
-        for feedbackCode in range(3 ** 5):
-            count = buckets[feedbackCode]
+        for count in buckets:
             if count == 0:
                 continue
 
@@ -103,11 +166,3 @@ class Engine:
             else:
                 self.possible.remove(hash(secretWord))
         self.possibleWords = newList
-
-    def getScore(self, value):
-        answer = 0
-        while value > 0:
-            answer += value % 3
-            value //= 3
-        
-        return answer

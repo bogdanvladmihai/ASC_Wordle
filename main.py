@@ -49,6 +49,7 @@ def checkAllWords():
 
 def calculateSecondChoice():
     file = open("second.txt", "w")
+    start_time = time.time()
 
     for fixedHash in range(3 ** 5):
         print(fixedHash)
@@ -62,6 +63,7 @@ def calculateSecondChoice():
             secondGuess = "NOTAWORD"
         
         print(secondGuess, file = file)
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 def calculateThirdStep():
     file = open("third.txt", "w")
