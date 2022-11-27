@@ -1,3 +1,5 @@
+import os
+import signal
 from math import log2
 import string
 
@@ -32,9 +34,10 @@ class Engine:
         while True:
             word, value = self.queue.get()
             if value == 242:
+                os.kill(os.getpid(), signal.SIGINT)
                 break
             self.updateWords(word, value)
-            print(self.chooseWord())
+            print("Your best guess would be: " + self.chooseWord())
 
     def computeSimulationEntropy(self, word, secretWords):
         buckets = [0] * 243
@@ -114,10 +117,14 @@ class Engine:
     def chooseWord(self, layer = 1):
         if len(self.guesses) == 0:
             return FIRST
+        # Precalculation to faster compute average number of tries,
+        # considering that the user doesn't type any non-optimal words
+        '''
         elif len(self.guesses) == 1:
             return self.secondChoice[self.guesses[0]]
         elif len(self.guesses) == 2:
             return self.third[self.guesses[0] * 243 + self.guesses[1]]
+        '''
         if len(self.possibleWords) <= 2:
             return self.getBestWord()
 

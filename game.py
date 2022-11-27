@@ -1,8 +1,9 @@
+import os
+import signal
 import sys
 
 from dataSource import DataSource
 import functools
-
 
 def wordIsValid(word):
     if len(word) != 5:
@@ -13,7 +14,7 @@ def wordIsValid(word):
 
 
 def getGuess():
-    guess_word = input("Your guess: ").upper()
+    guess_word = input().upper()
     while not wordIsValid(guess_word):
         guess_word = input("Your guess is invalid. Please choose another one: ").upper()
     return guess_word
@@ -42,12 +43,13 @@ def compareWords(word, guess):
     return value
 
 
-def toBase3(value):
-    ans = ""
+def getFeedback(value):
+    d = {0: "Gray", 1: "Yellow", 2: "Green"}
+    feedback = ""
     for i in range(5):
-        ans = str(value % 3) + ans
+        feedback = d[value % 3] + ", " + feedback
         value //= 3
-    return ans
+    return feedback[:-2]
 
 
 class Game:
@@ -79,9 +81,10 @@ class Game:
             if guess == self.secretWord:
                 game_finished = True
                 print(f"You have guessed the word in {tries} tries")
+                os.kill(os.getpid(), signal.SIGINT)
                 continue
 
             value = compareWords(self.secretWord, guess)
             self.queue.put((guess, value))
 
-            print(toBase3(value))
+            print(getFeedback(value))

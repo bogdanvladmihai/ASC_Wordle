@@ -1,7 +1,7 @@
 from multiprocessing import Queue
 from multiprocessing.context import Process
 
-from game import Game, compareWords, toBase3
+from game import Game, compareWords, getFeedback
 from engine import Engine
 from dataSource import DataSource
 
@@ -11,6 +11,8 @@ import time
 def startGame(queue):
     game = Game(queue)
     game.play()
+
+    # RUN GAME WITHOUT IPC
 
     # tries = 0
     # while True:
@@ -124,10 +126,9 @@ def start():
     engine_process.join()
     game_process.join()
 
-    game_process.close()
-    engine_process.close()
+    game_process.kill()
+    engine_process.kill()
+    exit(0)
 
 if __name__ == '__main__':
     start()
-
-# print("--- %s seconds ---" % (time.time() - start_time))
