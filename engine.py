@@ -95,9 +95,9 @@ class Engine:
         return False
 
     def compare(self, t):
-        return -t[0], -int(t[2] * 1000), t[1], -t[2]
+        return -t[0], -int(t[2] * 100), t[1], -t[2]
 
-    def chooseWord(self):
+    def chooseWord(self, layer = 1):
         if len(self.guesses) == 0:
             return FIRST
         elif len(self.guesses) == 1:
@@ -121,23 +121,16 @@ class Engine:
         entropies.sort(key = self.compare)
         candidates = entropies[:numberOfCandidates]
 
-        return candidates[0][1]
-
-        for candidate in candidates:
-            print(candidate)
+        if layer == 1:
+            return candidates[0][1]
 
         bestResult = 0
         bestWord = None
-        id = 0
         for word in candidates:
-            print(id)
-            id += 1
             simulationResult = self.simulate(word[1]) + word[0]
             if simulationResult > bestResult:
                 bestResult = simulationResult
                 bestWord = word[1]
-
-        print(bestResult, bestWord)
 
         return bestWord
 

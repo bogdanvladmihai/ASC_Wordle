@@ -13,7 +13,7 @@ def startGame():
 
 
 def checkAllWords():
-    file = open("solutions.txt", "w")
+    file = open("solutii.txt", "w")
     index = 0
     avg = 0
     for word in DataSource.words:
