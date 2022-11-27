@@ -51,7 +51,8 @@ def toBase3(value):
 class Game:
     dataSource = DataSource()
 
-    def __init__(self, word=None):
+    def __init__(self, word = None):
+        self.trie = 0
         self.secretWord = word
         if self.secretWord is None:
             self.chooseRandomWord()
@@ -59,18 +60,7 @@ class Game:
     def chooseRandomWord(self):
         self.secretWord = self.dataSource.getRandomWord()
 
-    def play(self):
-        tries = 0
-        game_finished = False
-        while not game_finished:
-            guess = getGuess()
-            tries += 1
-
-            if guess == self.secretWord:
-                game_finished = True
-                print(f"You have guessed the word in {tries} tries")
-                continue
-
-            value = compareWords(self.secretWord, guess)
-
-            print(toBase3(value))
+    def guess(self):
+        guess = getGuess()
+        feedBack = compareWords(self.secretWord, guess)
+        return guess, feedBack

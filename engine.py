@@ -3,6 +3,7 @@ import string
 
 from dataSource import DataSource
 from game import compareWords
+from multiprocessing import Process, Queue
 
 FIRST = "TUREI"
 PRI = 97

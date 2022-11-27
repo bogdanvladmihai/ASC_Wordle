@@ -1,15 +1,29 @@
-from game import Game, compareWords
+from game import Game, compareWords, toBase3
 from engine import Engine
 from dataSource import DataSource
+
 import time
 
 
 def startGame():
     game = Game()
     engine = Engine()
-    engine.chooseWord()
 
-    # game.play()
+    tries = 0
+    while True:
+        bestWord = engine.chooseWord()
+        print(f"Your best option would be {bestWord}!")
+
+        guess, feedback = game.guess()
+        tries += 1
+
+        print(toBase3(feedback))
+
+        if feedback == 3 ** 5 - 1:
+            print(f"You have found the corret word in {tries} tries!")
+            break
+        
+        engine.updateWords(guess, feedback)
 
 
 def checkAllWords():
@@ -92,8 +106,8 @@ def getBestWord():
     engine = Engine()
     return engine.chooseWord()
 
-start_time = time.time()
+# start_time = time.time()
 
-checkAllWords()
+startGame()
 
-print("--- %s seconds ---" % (time.time() - start_time))
+# print("--- %s seconds ---" % (time.time() - start_time))
