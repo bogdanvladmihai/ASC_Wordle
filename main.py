@@ -124,8 +124,8 @@ def start():
     engine_process.join()
     game_process.join()
 
-
-
+    game_process.close()
+    engine_process.close()
 
 if __name__ == '__main__':
     start()
