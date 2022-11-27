@@ -95,7 +95,7 @@ class Engine:
         return False
 
     def compare(self, t):
-        return -t[0], -int(t[2] * 100), t[1], -t[2]
+        return -t[0], -int(t[2] * 10), t[1], -t[2]
 
     def chooseWord(self, layer = 1):
         if len(self.guesses) == 0:
