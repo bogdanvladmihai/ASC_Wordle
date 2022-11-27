@@ -11,7 +11,8 @@ PRI = 97
 class Engine:
     dataSource = DataSource()
 
-    def __init__(self):
+    def __init__(self, queue):
+        self.queue = queue
         self.guesses = []
         self.words = Engine.dataSource.words
         self.possibleWords = Engine.dataSource.words
@@ -22,6 +23,16 @@ class Engine:
         self.possible = set()
         for word in self.words:
             self.possible.add(hash(word))
+
+        self.queueListener()
+
+    def queueListener(self):
+        while True:
+            word, value = self.queue.get()
+            if value == 242:
+                break
+            self.updateWords(word, value)
+            print(self.chooseWord())
 
     def computeSimulationEntropy(self, word, secretWords):
         buckets = [0] * 243

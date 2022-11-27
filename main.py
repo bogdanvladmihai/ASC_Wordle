@@ -1,3 +1,6 @@
+from multiprocessing import Queue
+from multiprocessing.context import Process
+
 from game import Game, compareWords, toBase3
 from engine import Engine
 from dataSource import DataSource
@@ -5,25 +8,25 @@ from dataSource import DataSource
 import time
 
 
-def startGame():
-    game = Game()
-    engine = Engine()
+def startGame(queue):
+    game = Game(queue)
+    game.play()
 
-    tries = 0
-    while True:
-        bestWord = engine.chooseWord()
-        print(f"Your best option would be {bestWord}!")
-
-        guess, feedback = game.guess()
-        tries += 1
-
-        print(toBase3(feedback))
-
-        if feedback == 3 ** 5 - 1:
-            print(f"You have found the corret word in {tries} tries!")
-            break
-        
-        engine.updateWords(guess, feedback)
+    # tries = 0
+    # while True:
+    #     bestWord = engine.chooseWord()
+    #     print(f"Your best option would be {bestWord}!")
+    #
+    #     guess, feedback = game.guess()
+    #     tries += 1
+    #
+    #     print(toBase3(feedback))
+    #
+    #     if feedback == 3 ** 5 - 1:
+    #         print(f"You have found the corret word in {tries} tries!")
+    #         break
+    #
+    #     engine.updateWords(guess, feedback)
 
 
 def checkAllWords():
@@ -107,7 +110,24 @@ def getBestWord():
     return engine.chooseWord()
 
 # start_time = time.time()
+def startEngine(queue):
+    engine = Engine(queue)
 
-startGame()
+
+def start():
+    queue = Queue()
+    game_process = Process(target=startGame, args=(queue, ))
+    engine_process = Process(target=startEngine, args=(queue, ))
+
+    engine_process.start()
+    game_process.start()
+    engine_process.join()
+    game_process.join()
+
+
+
+
+if __name__ == '__main__':
+    start()
 
 # print("--- %s seconds ---" % (time.time() - start_time))
