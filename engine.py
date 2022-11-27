@@ -24,7 +24,9 @@ class Engine:
         for word in self.words:
             self.possible.add(hash(word))
 
+        print(self.chooseWord())
         self.queueListener()
+
 
     def queueListener(self):
         while True:
